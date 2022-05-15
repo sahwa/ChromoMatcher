@@ -43,8 +43,34 @@ make_pca = function(x, n_pcs = 10) {
 
 sapply(chunkcounts, make_pca)
 
+###### correlation in PCs #########
 
 return_PCS = function(x) {
 	x = fread(x, header=T)
-	pca = data.table(ind = x_dat$Recipient, irlba::prcomp_irlba(x_dat[,-1], n=10)$x)
+	pca = data.table(ind = x$Recipient, irlba::prcomp_irlba(x[,-1], n=10)$x)
 }
+
+PC_list = lapply(chunkcounts, return_PCS)
+
+linked = PC_list[[1]]
+PC_list = PC_list[-1]
+
+PC_corr = data.table(sapply(PC_list, function(x) {
+	sapply(1:10, function(y) {
+		index = y+1
+		abs(cor(x[,..index], linked[,..index]))
+	})
+}))
+
+PC_corr %>%
+	rename("PBWT" = V1, "unlinked" = V2, "ChromoMatcher" = V3) %>%
+	mutate(PC = 1:n()) %>%
+	pivot_longer(-PC) %>%
+	mutate(PC = as.factor(PC)) %>%
+	ggplot(aes(x=PC, y=value)) +
+	geom_col(position = "dodge", aes(fill=name)) +
+	theme(
+		axis.text = element_text(size=16),
+		axis.title = element_text(size=20)
+	) +
+	theme_light()
