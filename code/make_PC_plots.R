@@ -1,5 +1,3 @@
-R
-
 setwd("/home/sam/Dropbox/Documents/PhD/PhD/analyses/ChromoMatcher/finestructure/data")
 
 chunkcounts = sort(list.files(pattern="chunkcounts.out"))
